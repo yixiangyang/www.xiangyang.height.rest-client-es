@@ -17,6 +17,7 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
@@ -250,12 +251,22 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		params.put("balance", "6000");
 //		Long long1= defaultEsClient.updateByQuery("account", queryBuilders, params);
 //		System.out.println(long1);
-		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
-		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
-		queryBuilders.add(new TermQueryBuilder("customerId", "2"));
-		Long long1 = defaultEsClient.deleteByQuery("account", queryBuilders);
-		System.out.println(long1);
 		
+		
+//		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
+//		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
+//		queryBuilders.add(new TermQueryBuilder("customerId", 2));
+//		Long long1 = defaultEsClient.deleteByQuery("account", queryBuilders);
+//		System.out.println(long1);
+		
+		EsClientConfig esClientConfig = new EsClientConfig();
+		RestHighLevelClient client = esClientConfig.client();
+		DeleteByQueryRequest request =
+		        new DeleteByQueryRequest("account");
+		request.setQuery(QueryBuilders.termQuery("customerId", "2"));
+		BulkByScrollResponse response = client.deleteByQuery(request, RequestOptions.DEFAULT);
+		System.out.println(response.getStatus().getDeleted());
+		client.close();
 	}
 
 
