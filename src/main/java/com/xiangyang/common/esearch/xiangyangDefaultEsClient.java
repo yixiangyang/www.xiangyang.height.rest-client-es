@@ -163,16 +163,15 @@ public class xiangyangDefaultEsClient implements ESClient{
 	@Override
 	public Long deleteByQuery(String index, List<QueryBuilder> queryBuilderList) {
 		try {
-			DeleteByQueryRequest deleteRequest = new DeleteByQueryRequest(index);
 			EsClientConfig esClientConfig = new EsClientConfig();
 			RestHighLevelClient client = esClientConfig.client();
-			UpdateByQueryRequest request =
-			        new UpdateByQueryRequest(index);
+			DeleteByQueryRequest request =
+			        new DeleteByQueryRequest(index);
 			for(QueryBuilder query:queryBuilderList) {
 				request.setQuery(query);
 			}
 			BulkByScrollResponse response =
-			        client.deleteByQuery(deleteRequest, RequestOptions.DEFAULT);
+			        client.deleteByQuery(request, RequestOptions.DEFAULT);
 			return response.getStatus().getDeleted();
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
@@ -195,17 +194,18 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
 //		Map<String, Object> requestMap = new HashMap<>();
 //		requestMap.put("id", "2");
-//		requestMap.put("name", "向阳");
+//		requestMap.put("balance", "5000");
+//		requestMap.put("customerId", "2");
 //		requestMap.put("date",System.currentTimeMillis());
-//		Boolean bl= defaultEsClient.indexDocument("customer", "3", requestMap);
+//		Boolean bl= defaultEsClient.indexDocument("account", "3", requestMap);
 //		System.out.println(bl);
 		//修改测试
 //		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
 //		Map<String, Object> requestMap = new HashMap<>();
-//		requestMap.put("id", "2");
+//		requestMap.put("id", "3");
 //		requestMap.put("balance", "400000");
 //		requestMap.put("customerId", "2");
-//		Boolean bl= defaultEsClient.updateDocument("account", "2", requestMap);
+//		Boolean bl= defaultEsClient.updateDocument("account", "3", requestMap);
 //		System.out.println(bl);
 		
 		//删除es测试
@@ -253,20 +253,21 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		System.out.println(long1);
 		
 		
-//		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
-//		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
+		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
+		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
 //		queryBuilders.add(new TermQueryBuilder("customerId", 2));
-//		Long long1 = defaultEsClient.deleteByQuery("account", queryBuilders);
-//		System.out.println(long1);
+		queryBuilders.add(QueryBuilders.matchAllQuery());
+		Long long1 = defaultEsClient.deleteByQuery("account", queryBuilders);
+		System.out.println(long1);
 		
-		EsClientConfig esClientConfig = new EsClientConfig();
-		RestHighLevelClient client = esClientConfig.client();
-		DeleteByQueryRequest request =
-		        new DeleteByQueryRequest("account");
-		request.setQuery(QueryBuilders.termQuery("customerId", "2"));
-		BulkByScrollResponse response = client.deleteByQuery(request, RequestOptions.DEFAULT);
-		System.out.println(response.getStatus().getDeleted());
-		client.close();
+//		EsClientConfig esClientConfig = new EsClientConfig();
+//		RestHighLevelClient client = esClientConfig.client();
+//		DeleteByQueryRequest request =
+//		        new DeleteByQueryRequest("account");
+//		request.setQuery(QueryBuilders.termQuery("customerId", "2"));
+//		BulkByScrollResponse response = client.deleteByQuery(request, RequestOptions.DEFAULT);
+//		System.out.println(response.getStatus().getDeleted());
+//		client.close();
 	}
 
 

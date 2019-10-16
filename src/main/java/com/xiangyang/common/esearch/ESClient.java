@@ -67,7 +67,7 @@ public interface ESClient {
     public Long updateByQuery(String index,List<QueryBuilder> queryBuilders,Map<String, Object> params);
 
     /**
-     * 
+     * 按照查询条件去删除es文档的数据
      * @param index 索引
      * @param queryBuilderList 查询条件
      * @return  返回删除的条数
