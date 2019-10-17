@@ -221,38 +221,41 @@ public class xiangyangDefaultEsClient implements ESClient{
 	}
 	
 	@Override
-	public Map<String, Object> searchDocuments(String index,List<QueryBuilder> queryBuilders,Integer from,Integer size,
-    		String sortField, SortOrder sortOrder,AggregationBuilder aggregationBuilder) throws RuntimeException{
+	public Map<String, Object> searchDocuments(String index, List<QueryBuilder> queryBuilders, Integer from,
+			Integer size, String sortField, SortOrder sortOrder, AggregationBuilder aggregationBuilder)
+			throws RuntimeException {
 		try {
 			SearchRequest searchRequest = new SearchRequest(index);
 			SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-			for(QueryBuilder queryBuilder:queryBuilders) {
-				sourceBuilder.query(queryBuilder);
+			BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+			for (QueryBuilder queryBuilder : queryBuilders) {
+				boolQueryBuilder.must().add(queryBuilder);
 			}
-			if(size !=null && size !=0) {
+			sourceBuilder.query(boolQueryBuilder);
+			if (size != null && size != 0) {
 				sourceBuilder.from(from);
 				sourceBuilder.size(size);
 			}
-			if(!StringUtils.isEmpty(sortField)) {
+			if (!StringUtils.isEmpty(sortField)) {
 				sourceBuilder.sort(sortField, sortOrder);
 			}
-			if(aggregationBuilder!=null) {
+			if (aggregationBuilder != null) {
 				sourceBuilder.aggregation(aggregationBuilder);
 			}
 			searchRequest.source(sourceBuilder);
 			EsClientConfig esClientConfig = new EsClientConfig();
 			RestHighLevelClient client = esClientConfig.client();
-			LOGGER.info("ES查询语句:{}",searchRequest.toString());
+			LOGGER.info("ES查询语句:{}", searchRequest.toString());
 			SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-			LOGGER.info("ES返回内容:{}",searchResponse.toString());
+			LOGGER.info("ES返回内容:{}", searchResponse.toString());
 			Long totalCount = searchResponse.getHits().getTotalHits().value;
 			List<Map<String, Object>> documentList = new ArrayList<>();
-			SearchHits hits =searchResponse.getHits();
-			for(SearchHit hit:hits.getHits()) {
+			SearchHits hits = searchResponse.getHits();
+			for (SearchHit hit : hits.getHits()) {
 				documentList.add(hit.getSourceAsMap());
 			}
 			int totalPage = 1;
-			if(size !=null && size !=0) {
+			if (size != null && size != 0) {
 				totalPage = PageUtil.getTotalPage(Integer.valueOf(String.valueOf(totalCount)), size);
 			}
 			Map<String, Object> responseMap = new HashMap<String, Object>();
@@ -261,7 +264,7 @@ public class xiangyangDefaultEsClient implements ESClient{
 			responseMap.put("datas", documentList);
 			return responseMap;
 		} catch (Exception e) {
-			LOGGER.info("搜索失败,{}",e.getMessage());
+			LOGGER.info("搜索失败,{}", e.getMessage());
 		}
 		return null;
 	}
