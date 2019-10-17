@@ -1,21 +1,26 @@
 package com.xiangyang.common.esearch;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -36,6 +41,9 @@ public class xiangyangDefaultEsClient implements ESClient{
 		try {
 			if(StringUtils.isEmpty(index)) {
 				throw new RuntimeException("INDEX IS NULL");
+			}
+			if(!this.indexExists(index)) {
+				throw new RuntimeException("INDEX IS NOT EXISTS");
 			}
 			if(StringUtils.isEmpty(id)) {
 				throw new RuntimeException("ID IS NULL");
@@ -60,6 +68,9 @@ public class xiangyangDefaultEsClient implements ESClient{
 		try {
 			if(StringUtils.isEmpty(index)) {
 				throw new RuntimeException("INDEX IS NULL");
+			}
+			if(!this.indexExists(index)) {
+				throw new RuntimeException("INDEX IS NOT EXISTS");
 			}
 			if(StringUtils.isEmpty(id)) {
 				throw new RuntimeException("ID IS NULL");
@@ -87,6 +98,9 @@ public class xiangyangDefaultEsClient implements ESClient{
 			if(StringUtils.isEmpty(index)) {
 				throw new RuntimeException("INDEX IS NULL");
 			}
+			if(!this.indexExists(index)) {
+				throw new RuntimeException("INDEX IS NOT EXISTS");
+			}
 			if(StringUtils.isEmpty(id)) {
 				throw new RuntimeException("ID IS NULL");
 			}
@@ -110,6 +124,9 @@ public class xiangyangDefaultEsClient implements ESClient{
 			if(StringUtils.isEmpty(index)) {
 				throw new RuntimeException("INDEX IS NULL");
 			}
+			if(!this.indexExists(index)) {
+				throw new RuntimeException("INDEX IS NOT EXISTS");
+			}
 			if(StringUtils.isEmpty(id)) {
 				throw new RuntimeException("ID IS NULL");
 			}
@@ -131,10 +148,13 @@ public class xiangyangDefaultEsClient implements ESClient{
 	}
 
 	@Override
-	public Long updateByQuery(String index,List<QueryBuilder> queryBuilders,Map<String, Object> params) {
+	public Long updateDocumentByQuery(String index,List<QueryBuilder> queryBuilders,Map<String, Object> params) {
 		try {
 			if(StringUtils.isEmpty(index)) {
 				throw new RuntimeException("INDEX IS NULL");
+			}
+			if(!this.indexExists(index)) {
+				throw new RuntimeException("INDEX IS NOT EXISTS");
 			}
 			if(params.isEmpty()) {
 				throw new RuntimeException("PARAMS IS NULL");
@@ -161,8 +181,14 @@ public class xiangyangDefaultEsClient implements ESClient{
 	}
 
 	@Override
-	public Long deleteByQuery(String index, List<QueryBuilder> queryBuilderList) {
+	public Long deleteDocumentByQuery(String index, List<QueryBuilder> queryBuilderList) {
 		try {
+			if(StringUtils.isEmpty(index)) {
+				throw new RuntimeException("INDEX IS NULL");
+			}
+			if(!this.indexExists(index)) {
+				throw new RuntimeException("INDEX IS NOT EXISTS");
+			}
 			EsClientConfig esClientConfig = new EsClientConfig();
 			RestHighLevelClient client = esClientConfig.client();
 			DeleteByQueryRequest request =
@@ -173,6 +199,61 @@ public class xiangyangDefaultEsClient implements ESClient{
 			BulkByScrollResponse response =
 			        client.deleteByQuery(request, RequestOptions.DEFAULT);
 			return response.getStatus().getDeleted();
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+	
+	@Override
+	public Boolean createIndexAndMapping(String index,Map<String, Object> source) {
+		try {
+			if(StringUtils.isEmpty(index)) {
+				throw new RuntimeException("INDEX IS NULL");
+			}
+			if(this.indexExists(index)) {
+				throw new RuntimeException("INDEX IS EXISTS");
+			}
+			CreateIndexRequest request = new CreateIndexRequest(index);
+			request.mapping(source);
+			EsClientConfig esClientConfig = new EsClientConfig();
+			RestHighLevelClient client = esClientConfig.client();
+			CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
+			return  response.isAcknowledged(); 
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+	
+	@Override
+	public Boolean deleteIndex(String index) {
+		try {
+			if(StringUtils.isEmpty(index)) {
+				throw new RuntimeException("INDEX IS NULL");
+			}
+			if(!this.indexExists(index)) {
+				throw new RuntimeException("INDEX IS NOT EXISTS");
+			}
+			DeleteIndexRequest request = new DeleteIndexRequest(index);
+			EsClientConfig esClientConfig = new EsClientConfig();
+			RestHighLevelClient client = esClientConfig.client();
+			AcknowledgedResponse deleteIndexResponse = client.indices().delete(request, RequestOptions.DEFAULT);
+			return deleteIndexResponse.isAcknowledged();
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+	
+	@Override
+	public Boolean indexExists(String index) {
+		try {
+			if(StringUtils.isEmpty(index)) {
+				throw new RuntimeException("INDEX IS NULL");
+			}
+			GetIndexRequest request = new GetIndexRequest(index);
+			EsClientConfig esClientConfig = new EsClientConfig();
+			RestHighLevelClient client = esClientConfig.client();
+			boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
+			return exists;
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -268,7 +349,27 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		BulkByScrollResponse response = client.deleteByQuery(request, RequestOptions.DEFAULT);
 //		System.out.println(response.getStatus().getDeleted());
 //		client.close();
+		//创建索引映射
+		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
+//		Map<String, Object> message = new HashMap<>();
+//		message.put("type", "text");
+//		Map<String, Object> intMap = new HashMap<>();
+//		intMap.put("type", "integer");
+//		Map<String, Object> dateMap = new HashMap<>();
+//		dateMap.put("type", "date");
+//		Map<String, Object> properties = new HashMap<>();
+//		properties.put("message", message);
+//		properties.put("title", message);
+//		properties.put("age", intMap);
+//		properties.put("createTime", dateMap);
+//		Map<String, Object> mapping = new HashMap<>();
+//		mapping.put("properties", properties);
+//		defaultEsClient.createIndexAndMapping("ceshi4", new HashMap<String,Object>());
+	   System.out.println( defaultEsClient.deleteIndex("ceshi1"));
+//		System.out.println(defaultEsClient.indexExists("ceshi1"));
 	}
+
+	
 
 
 }
