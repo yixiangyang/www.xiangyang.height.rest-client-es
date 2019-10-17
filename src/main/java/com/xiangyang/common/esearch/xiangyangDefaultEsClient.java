@@ -12,10 +12,14 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -24,9 +28,20 @@ import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.UpdateByQueryRequest;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import com.xiangyang.common.util.PageUtil;
+
 public class xiangyangDefaultEsClient implements ESClient{
+	private static final Logger LOGGER = LoggerFactory.getLogger(xiangyangDefaultEsClient.class);
 	private final int SUCCESS_CODE = 200;
 	
 	private final int SUCCESS_CODE2 =201;//创建文档成功的时候回返回201 修改的时候回返回200
@@ -177,6 +192,52 @@ public class xiangyangDefaultEsClient implements ESClient{
 			throw new RuntimeException(e.getMessage());
 		}
 	}
+	
+	@Override
+	public Map<String, Object> searchDocuments(String index,List<QueryBuilder> queryBuilders,Integer from,Integer size,
+			String sortField, SortOrder sortOrder,AggregationBuilder aggregationBuilder) throws RuntimeException{
+		try {
+			SearchRequest searchRequest = new SearchRequest(index);
+			SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+			for(QueryBuilder queryBuilder:queryBuilders) {
+				sourceBuilder.query(queryBuilder);
+			}
+			if(size !=null && size !=0) {
+				sourceBuilder.from(from);
+				sourceBuilder.size(size);
+			}
+			if(!StringUtils.isEmpty(sortField)) {
+				sourceBuilder.sort(sortField, sortOrder);
+			}
+			if(aggregationBuilder!=null) {
+				sourceBuilder.aggregation(aggregationBuilder);
+			}
+			searchRequest.source(sourceBuilder);
+			EsClientConfig esClientConfig = new EsClientConfig();
+			RestHighLevelClient client = esClientConfig.client();
+			LOGGER.info("ES查询语句:{}",searchRequest.toString());
+			SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+			LOGGER.info("ES返回内容:{}",searchResponse.toString());
+			Long totalCount = searchResponse.getHits().getTotalHits().value;
+			List<Map<String, Object>> documentList = new ArrayList<>();
+			SearchHits hits =searchResponse.getHits();
+			for(SearchHit hit:hits.getHits()) {
+				documentList.add(hit.getSourceAsMap());
+			}
+			int totalPage = 1;
+			if(size !=null && size !=0) {
+				totalPage = PageUtil.getTotalPage(Integer.valueOf(String.valueOf(totalCount)), size);
+			}
+			Map<String, Object> responseMap = new HashMap<String, Object>();
+			responseMap.put("totalCount", totalCount);
+			responseMap.put("totalPage", totalPage);
+			responseMap.put("datas", documentList);
+			return responseMap;
+		} catch (Exception e) {
+			LOGGER.info("搜索失败,{}",e.getMessage());
+			throw new RuntimeException(e.getMessage());
+		}
+	}
 
 	public static void main(String[] args) throws IOException {
 //		EsClientConfig esClientConfig = new EsClientConfig();
@@ -253,12 +314,12 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		System.out.println(long1);
 		
 		
-		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
-		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
+//		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
+//		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
 //		queryBuilders.add(new TermQueryBuilder("customerId", 2));
-		queryBuilders.add(QueryBuilders.matchAllQuery());
-		Long long1 = defaultEsClient.deleteByQuery("account", queryBuilders);
-		System.out.println(long1);
+//		queryBuilders.add(QueryBuilders.matchAllQuery());
+//		Long long1 = defaultEsClient.deleteByQuery("account", queryBuilders);
+//		System.out.println(long1);
 		
 //		EsClientConfig esClientConfig = new EsClientConfig();
 //		RestHighLevelClient client = esClientConfig.client();
@@ -268,6 +329,15 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		BulkByScrollResponse response = client.deleteByQuery(request, RequestOptions.DEFAULT);
 //		System.out.println(response.getStatus().getDeleted());
 //		client.close();
+		//搜索api
+		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
+		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
+//		queryBuilders.add(QueryBuilders.matchAllQuery());
+		queryBuilders.add(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("lastname", "Duke")));
+		queryBuilders.add(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("balance").from(8000)));
+		Map<String, Object> map= defaultEsClient.searchDocuments("bank", queryBuilders, 20, 20, null, null, null);
+		System.out.println("这个是最后");
+		System.out.println(map.toString());
 	}
 
 

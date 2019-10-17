@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 
 /**
  * 
@@ -73,4 +75,7 @@ public interface ESClient {
      * @return  返回删除的条数
      */
     public Long deleteByQuery(String index, List<QueryBuilder> queryBuilderList);
+    
+    public Map<String, Object> searchDocuments(String index,List<QueryBuilder> queryBuilders,Integer from,Integer size,
+    		String sortField, SortOrder sortOrder,AggregationBuilder aggregationBuilder) throws RuntimeException;
 }
