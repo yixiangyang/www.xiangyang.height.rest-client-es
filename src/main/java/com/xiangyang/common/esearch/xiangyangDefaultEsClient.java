@@ -253,12 +253,12 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		System.out.println(long1);
 		
 		
-		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
-		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
+//		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
+//		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
 //		queryBuilders.add(new TermQueryBuilder("customerId", 2));
-		queryBuilders.add(QueryBuilders.matchAllQuery());
-		Long long1 = defaultEsClient.deleteByQuery("account", queryBuilders);
-		System.out.println(long1);
+//		queryBuilders.add(QueryBuilders.matchAllQuery());
+//		Long long1 = defaultEsClient.deleteByQuery("account", queryBuilders);
+//		System.out.println(long1);
 		
 //		EsClientConfig esClientConfig = new EsClientConfig();
 //		RestHighLevelClient client = esClientConfig.client();
