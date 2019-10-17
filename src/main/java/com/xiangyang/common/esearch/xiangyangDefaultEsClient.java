@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -13,6 +14,8 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -21,6 +24,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -29,6 +34,8 @@ import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.UpdateByQueryRequest;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.util.StringUtils;
 
 public class xiangyangDefaultEsClient implements ESClient{
@@ -365,8 +372,26 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		Map<String, Object> mapping = new HashMap<>();
 //		mapping.put("properties", properties);
 //		defaultEsClient.createIndexAndMapping("ceshi4", new HashMap<String,Object>());
-	   System.out.println( defaultEsClient.deleteIndex("ceshi1"));
+//	   System.out.println( defaultEsClient.deleteIndex("ceshi1"));
 //		System.out.println(defaultEsClient.indexExists("ceshi1"));
+	   
+	   SearchRequest searchRequest = new SearchRequest("bank","customer");
+	   SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+//	   sourceBuilder.query(QueryBuilders.matchQuery("id", "2").fuzziness(Fuzziness.AUTO));
+//	   sourceBuilder.query(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("account_number", "2")));
+	   QueryBuilder queryBuilder = null;
+	   queryBuilder= QueryBuilders.boolQuery().must(QueryBuilders.termQuery("account_number", "2"));
+	   queryBuilder= QueryBuilders.boolQuery().must(QueryBuilders.termQuery("id", "2"));
+//	   sourceBuilder.query(QueryBuilders.termQuery("account_number", "2"));
+//	   sourceBuilder.query(QueryBuilders.termQuery("id", "2"));
+	   sourceBuilder.query(queryBuilder);
+	   EsClientConfig client = new EsClientConfig();
+	   searchRequest.source(sourceBuilder);
+	   SearchResponse searchResponse = client.client().search(searchRequest, RequestOptions.DEFAULT);
+	   for(SearchHit hit:searchResponse.getHits().getHits()) {
+		   System.out.println(hit);
+	   }
+	   
 	}
 
 	
