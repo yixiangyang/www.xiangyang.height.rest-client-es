@@ -377,14 +377,17 @@ public class xiangyangDefaultEsClient implements ESClient{
 	   
 	   SearchRequest searchRequest = new SearchRequest("bank","customer");
 	   SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+	   BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+	   boolQueryBuilder.must().add(QueryBuilders.termQuery("account_number", "2"));
+	   boolQueryBuilder.must().add(QueryBuilders.termQuery("id", "2"));
 //	   sourceBuilder.query(QueryBuilders.matchQuery("id", "2").fuzziness(Fuzziness.AUTO));
 //	   sourceBuilder.query(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("account_number", "2")));
-	   QueryBuilder queryBuilder = null;
-	   queryBuilder= QueryBuilders.boolQuery().must(QueryBuilders.termQuery("account_number", "2"));
-	   queryBuilder= QueryBuilders.boolQuery().must(QueryBuilders.termQuery("id", "2"));
+//	   QueryBuilder queryBuilder = null;
+//	   queryBuilder= QueryBuilders.boolQuery().must(QueryBuilders.termQuery("account_number", "2"));
+//	   queryBuilder= QueryBuilders.boolQuery().must(QueryBuilders.termQuery("id", "2"));
 //	   sourceBuilder.query(QueryBuilders.termQuery("account_number", "2"));
 //	   sourceBuilder.query(QueryBuilders.termQuery("id", "2"));
-	   sourceBuilder.query(queryBuilder);
+	   sourceBuilder.query(boolQueryBuilder);
 	   EsClientConfig client = new EsClientConfig();
 	   searchRequest.source(sourceBuilder);
 	   SearchResponse searchResponse = client.client().search(searchRequest, RequestOptions.DEFAULT);
