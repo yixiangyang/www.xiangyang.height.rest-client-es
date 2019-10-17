@@ -66,7 +66,7 @@ public interface ESClient {
 	  * @param params 参数和值
 	  * @return 返回更新的条数
 	  */
-    public Long updateByQuery(String index,List<QueryBuilder> queryBuilders,Map<String, Object> params);
+    public Long updateDocumentByQuery(String index,List<QueryBuilder> queryBuilders,Map<String, Object> params);
 
     /**
      * 按照查询条件去删除es文档的数据
@@ -74,8 +74,36 @@ public interface ESClient {
      * @param queryBuilderList 查询条件
      * @return  返回删除的条数
      */
-    public Long deleteByQuery(String index, List<QueryBuilder> queryBuilderList);
+    public Long deleteDocumentByQuery(String index, List<QueryBuilder> queryBuilderList);
+    
     
     public Map<String, Object> searchDocuments(String index,List<QueryBuilder> queryBuilders,Integer from,Integer size,
     		String sortField, SortOrder sortOrder,AggregationBuilder aggregationBuilder) throws RuntimeException;
+    
+   
+    
+    /**
+     * 创建索引和映射
+     * @param index 索引
+     * @param source 格式 "properties"{
+     *  "字段名字":{"type":"类型"
+     *  }
+     *  }
+     * @return
+     */
+    public Boolean createIndexAndMapping(String index,Map<String, Object> source);
+    
+    /**
+     * 删除索引API
+     * @param index 索引名字
+     * @return
+     */
+    public Boolean deleteIndex(String index);
+    
+    /**
+     * 索引是否存在
+     * @param index
+     * @return
+     */
+    public Boolean indexExists(String index);
 }
