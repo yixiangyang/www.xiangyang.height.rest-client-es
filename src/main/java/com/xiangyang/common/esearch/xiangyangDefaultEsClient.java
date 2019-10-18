@@ -265,8 +265,8 @@ public class xiangyangDefaultEsClient implements ESClient{
 			return responseMap;
 		} catch (Exception e) {
 			LOGGER.info("搜索失败,{}", e.getMessage());
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 	
 	@Override	
@@ -415,14 +415,15 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		System.out.println(response.getStatus().getDeleted());
 //		client.close();
 		//搜索api
-//		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
-//		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
-//		queryBuilders.add(QueryBuilders.matchAllQuery());
+		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
+		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
+		queryBuilders.add(QueryBuilders.matchQuery("account_number", "2"));
+		queryBuilders.add(QueryBuilders.matchQuery("id", "2"));
 //		queryBuilders.add(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("lastname", "Duke")));
 //		queryBuilders.add(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("balance").from(8000)));
-//		Map<String, Object> map= defaultEsClient.searchDocuments("bank", queryBuilders, 20, 20, null, null, null);
-//		System.out.println("这个是最后");
-//		System.out.println(map.toString());
+		Map<String, Object> map= defaultEsClient.searchDocuments("bank,customer", queryBuilders, 0, 20, null, null, null);
+		System.out.println("这个是最后");
+		System.out.println(map.toString());
 		//创建索引映射
 //		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
 //		Map<String, Object> message = new HashMap<>();
@@ -442,11 +443,11 @@ public class xiangyangDefaultEsClient implements ESClient{
 //	   System.out.println( defaultEsClient.deleteIndex("ceshi1"));
 //		System.out.println(defaultEsClient.indexExists("ceshi1"));
 	   
-	   SearchRequest searchRequest = new SearchRequest("bank","customer");
-	   SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-	   BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-	   boolQueryBuilder.must().add(QueryBuilders.termQuery("account_number", "2"));
-	   boolQueryBuilder.must().add(QueryBuilders.termQuery("id", "2"));
+//	   SearchRequest searchRequest = new SearchRequest("bank","customer");
+//	   SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+//	   BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+//	   boolQueryBuilder.must().add(QueryBuilders.termQuery("account_number", "2"));
+//	   boolQueryBuilder.must().add(QueryBuilders.termQuery("id", "2"));
 //	   sourceBuilder.query(QueryBuilders.matchQuery("id", "2").fuzziness(Fuzziness.AUTO));
 //	   sourceBuilder.query(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("account_number", "2")));
 //	   QueryBuilder queryBuilder = null;
@@ -454,14 +455,14 @@ public class xiangyangDefaultEsClient implements ESClient{
 //	   queryBuilder= QueryBuilders.boolQuery().must(QueryBuilders.termQuery("id", "2"));
 //	   sourceBuilder.query(QueryBuilders.termQuery("account_number", "2"));
 //	   sourceBuilder.query(QueryBuilders.termQuery("id", "2"));
-	   sourceBuilder.query(boolQueryBuilder);
-	   EsClientConfig client = new EsClientConfig();
-	   searchRequest.source(sourceBuilder);
-	   SearchResponse searchResponse = client.client().search(searchRequest, RequestOptions.DEFAULT);
-	   for(SearchHit hit:searchResponse.getHits().getHits()) {
-		   System.out.println(hit);
-	   }
-	   
+//	   sourceBuilder.query(boolQueryBuilder);
+//	   EsClientConfig client = new EsClientConfig();
+//	   searchRequest.source(sourceBuilder);
+//	   SearchResponse searchResponse = client.client().search(searchRequest, RequestOptions.DEFAULT);
+//	   for(SearchHit hit:searchResponse.getHits().getHits()) {
+//		   System.out.println(hit);
+//	   }
+//	   
 	}
 
 	
