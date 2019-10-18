@@ -337,13 +337,13 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		System.out.println(response.getSource());
 //		client.close();
 		//新增测试
-//		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
+		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
 //		Map<String, Object> requestMap = new HashMap<>();
-//		requestMap.put("id", "2");
+//		requestMap.put("id", "3");
 //		requestMap.put("balance", "5000");
-//		requestMap.put("customerId", "2");
+//		requestMap.put("name", "向阳2");
 //		requestMap.put("date",System.currentTimeMillis());
-//		Boolean bl= defaultEsClient.indexDocument("account", "3", requestMap);
+//		Boolean bl= defaultEsClient.indexDocument("customer", "3", requestMap);
 //		System.out.println(bl);
 		//修改测试
 //		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
@@ -415,14 +415,15 @@ public class xiangyangDefaultEsClient implements ESClient{
 //		System.out.println(response.getStatus().getDeleted());
 //		client.close();
 		//搜索api
-		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
+//		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
 		List<QueryBuilder> queryBuilders = new ArrayList<QueryBuilder>();
-		queryBuilders.add(QueryBuilders.matchQuery("account_number", "2"));
-		queryBuilders.add(QueryBuilders.matchQuery("id", "2"));
+//		queryBuilders.add(QueryBuilders.matchQuery("account_number", "2"));
+//		queryBuilders.add(QueryBuilders.matchQuery("id", "2"));
+		queryBuilders.add(QueryBuilders.boolQuery().should(QueryBuilders.matchQuery("name", "向阳")));
 //		queryBuilders.add(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("lastname", "Duke")));
 //		queryBuilders.add(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("balance").from(8000)));
 		Map<String, Object> map= defaultEsClient.searchDocuments("bank,customer", queryBuilders, 0, 20, null, null, null);
-		System.out.println("这个是最后");
+//		System.out.println("这个是最后");
 		System.out.println(map.toString());
 		//创建索引映射
 //		xiangyangDefaultEsClient defaultEsClient = new xiangyangDefaultEsClient();
